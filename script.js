@@ -1,20 +1,35 @@
 let speech = new SpeechSynthesisUtterance();
-
-let voices =[];
+let voices = [];
 let voiceSelect = document.querySelector("select");
 
-window.speechSynthesis.onvoiceschanged = () => {
-    voices = window.speechSynthesis.getVoices();
-    speech.voice = voices[0];
+function loadVoices() {
+  voices = window.speechSynthesis.getVoices();
+  speech.voice = voices[0];
 
-    voices.forEach((voice, i) => (voiceSelect.options[i] = new Option(voice.name, i)));
-};
+  voices.forEach((voice, i) => {
+    voiceSelect.options[i] = new Option(voice.name, i);
+  });
+}
 
-voiceSelect.addEventListener("change", () =>{
-    speech.voice = voices[voiceSelect.value];
-});
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
 
-document.querySelector("button").addEventListener("click",() =>{
-    speech.text = document.querySelector("textarea").value;
-    window.speechSynthesis.speak(speech);
-})
+function selectVoice() {
+  speech.voice = voices[voiceSelect.value];
+}
+
+function speakText() {
+  speech.text = document.querySelector("textarea").value;
+  window.speechSynthesis.speak(speech);
+}
+
+voiceSelect.addEventListener("change", selectVoice);
+document.querySelector("button").addEventListener("click", speakText);
+
+// Additional logic for mobile devices
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+if (isMobileDevice) {
+  document.addEventListener("DOMContentLoaded", loadVoices);
+}
